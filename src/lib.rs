@@ -23,10 +23,3 @@ impl Config {
         Ok(Config { query, filename })
     }
 }
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-  #[test]
-  
-}
