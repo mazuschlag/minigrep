@@ -68,12 +68,22 @@ mod tests {
     #[test]
     fn create_new_config() {
         let args = valid_args();
-        assert_eq!(Config::new(&args).unwrap(), Config { query: "two".to_string(), filename: "poem.txt".to_string() })
+        assert_eq!(
+            Config::new(&args).unwrap(), 
+            Config { 
+                query: "two".to_string(), 
+                filename: "poem.txt".to_string(), 
+                case_sensitive: false 
+            }
+        );
     }
     #[test]
     fn create_invalid_config() {
         let args = invalid_args_len();
-        assert!(Config::new(&args).is_err(), "not enough arguments")
+        assert!(
+            Config::new(&args).is_err(), 
+            "not enough arguments"
+        );
     }
 
     #[test]
@@ -83,14 +93,14 @@ mod tests {
         if let Err(e) = run(config) {
             panic!("Application error: {}", e);
         }
-        assert!(true)
+        assert!(true);
     }
 
     #[test]
     fn invalid_run() {
         let args = invalid_args_filename();
         let config = Config::new(&args).unwrap();
-        assert!(run(config).is_err())
+        assert!(run(config).is_err());
     }
 
     #[test]
@@ -100,7 +110,7 @@ mod tests {
         assert_eq!(
             vec!["safe, fast, productive."],
             search(query, contents)
-        )
+        );
     }
 
     #[test]
