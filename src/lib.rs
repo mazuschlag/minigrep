@@ -16,13 +16,9 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 }
 
 fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let mut results = Vec::new();
-    for line in contents.lines() {
-        if line.contains(query) {
-            results.push(line);
-        }
-    }
-    results
+    contents.lines()
+        .filter(|line| line.contains(query))
+        .collect()
 }
 
 fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
@@ -44,12 +40,16 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new(args: &[String]) -> Result<Config, &'static str> {
-        if args.len() < 3 {
-            return Err("not enough arguments");
-        }
-        let query = args[1].clone();
-        let filename = args[2].clone();
+    pub fn new(mut args: std::env::Args) -> Result<Config, &'static str> {
+        args.next();
+        let query = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a query string"),
+        };
+        let filename = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a file name"),
+        };
         let case_sensitive = env::var("CASE_INSENSITIVE").is_err();
 
         Ok(Config { query, filename , case_sensitive})
@@ -65,43 +65,6 @@ impl PartialEq for Config {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test]
-    fn create_new_config() {
-        let args = valid_args();
-        assert_eq!(
-            Config::new(&args).unwrap(), 
-            Config { 
-                query: "two".to_string(), 
-                filename: "poem.txt".to_string(), 
-                case_sensitive: false 
-            }
-        );
-    }
-    #[test]
-    fn create_invalid_config() {
-        let args = invalid_args_len();
-        assert!(
-            Config::new(&args).is_err(), 
-            "not enough arguments"
-        );
-    }
-
-    #[test]
-    fn valid_run() {
-        let args = valid_args();
-        let config = Config::new(&args).unwrap();
-        if let Err(e) = run(config) {
-            panic!("Application error: {}", e);
-        }
-        assert!(true);
-    }
-
-    #[test]
-    fn invalid_run() {
-        let args = invalid_args_filename();
-        let config = Config::new(&args).unwrap();
-        assert!(run(config).is_err());
-    }
 
     #[test]
     fn case_sensitive() {
@@ -121,17 +84,5 @@ mod tests {
             vec!["Rust:", "Rustles my jimmies!"],
             search_case_insensitive(query, contents)
         );
-    }
-
-    fn valid_args() -> Vec<String> {
-        vec!("one".to_string(), "two".to_string(), "poem.txt".to_string())
-    }
-
-    fn invalid_args_len() -> Vec<String> {
-        vec!("one".to_string(), "two".to_string())
-    }
-
-    fn invalid_args_filename() -> Vec<String> {
-        vec!("one".to_string(), "two".to_string(), "fake.txt".to_string())
     }
 }
